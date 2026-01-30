@@ -1,0 +1,8 @@
+{
+  "mcpId": "weily22/github-workflow-agent",
+  "name": "GitHub Workflow Agent",
+  "version": "1.0.0",
+  "description": "AI-powered GitHub PR Reviewer & Manager",
+  "runtime": "node",
+  "entrypoint": "dist/index.js"
+}

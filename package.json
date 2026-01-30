@@ -1,0 +1,26 @@
+{
+  "name": "github-workflow-agent",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "github-workflow-agent": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "keywords": [],
+  "author": "weily",
+  "license": "ISC",
+  "description": "AI-powered GitHub PR Reviewer & Manager",
+  "devDependencies": {
+    "@types/node": "^25.1.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "@octokit/rest": "^22.0.1",
+    "zod": "^4.3.6"
+  }
+}

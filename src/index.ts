@@ -21,6 +21,7 @@ server.tool(
     { owner: z.string(), repo: z.string(), pull_number: z.number() },
     async ({ owner, repo, pull_number }) => {
         try {
+            const octokit = getOctokit();
             const { data } = await octokit.pulls.get({
                 owner, repo, pull_number,
                 mediaType: { format: "diff" }
@@ -48,6 +49,7 @@ server.tool(
     "get_file_contents",
     { owner: z.string(), repo: z.string(), path: z.string(), ref: z.string() },
     async ({ owner, repo, path, ref }) => {
+        const octokit = getOctokit();
         const { data } = await octokit.repos.getContent({ owner, repo, path, ref }) as any;
         return {
             content: [{ type: "text", text: JSON.stringify({
@@ -65,6 +67,7 @@ server.tool(
         content: z.string(), message: z.string(), branch: z.string(), sha: z.string()
     },
     async ({ owner, repo, path, content, message, branch, sha }) => {
+        const octokit = getOctokit();
         await octokit.repos.createOrUpdateFileContents({
             owner, repo, path, message,
             content: Buffer.from(content).toString("base64"),
@@ -82,6 +85,7 @@ server.tool(
     },
     async ({ owner, repo, branch }) => {
         try {
+            const octokit = getOctokit();
             const { data } = await octokit.actions.listWorkflowRunsForRepo({
                 owner,
                 repo,
@@ -115,6 +119,7 @@ server.tool(
     "merge_pr",
     { owner: z.string(), repo: z.string(), pull_number: z.number() },
     async ({ owner, repo, pull_number }) => {
+        const octokit = getOctokit();
         await octokit.pulls.merge({ owner, repo, pull_number });
         return { content: [{ type: "text", text: "🚀 任务完成，PR 已成功合并！" }] };
     }

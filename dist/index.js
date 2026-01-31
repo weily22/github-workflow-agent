@@ -3,15 +3,21 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { Octokit } from "@octokit/rest";
-const octokit = new Octokit({
-    auth: process.env.GITHUB_TOKEN,
-});
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+// 延迟初始化 Octokit 的函数
+const getOctokit = () => {
+    if (!GITHUB_TOKEN) {
+        throw new Error("Missing GITHUB_TOKEN environment variable");
+    }
+    return new Octokit({ auth: GITHUB_TOKEN });
+};
 const server = new McpServer({
     name: "github-workflow-tools",
     version: "1.0.0",
 });
 server.tool("get_pr_diff", { owner: z.string(), repo: z.string(), pull_number: z.number() }, async ({ owner, repo, pull_number }) => {
     try {
+        const octokit = getOctokit();
         const { data } = await octokit.pulls.get({
             owner, repo, pull_number,
             mediaType: { format: "diff" }
@@ -23,6 +29,7 @@ server.tool("get_pr_diff", { owner: z.string(), repo: z.string(), pull_number: z
     }
 });
 server.tool("add_pr_comment", { owner: z.string(), repo: z.string(), pull_number: z.number(), report: z.string() }, async ({ owner, repo, pull_number, report }) => {
+    const octokit = getOctokit();
     await octokit.issues.createComment({
         owner, repo, issue_number: pull_number,
         body: `### 🤖 AI Code Review Report\n\n${report}`
@@ -30,6 +37,7 @@ server.tool("add_pr_comment", { owner: z.string(), repo: z.string(), pull_number
     return { content: [{ type: "text", text: "报告已同步至 GitHub PR 评论区" }] };
 });
 server.tool("get_file_contents", { owner: z.string(), repo: z.string(), path: z.string(), ref: z.string() }, async ({ owner, repo, path, ref }) => {
+    const octokit = getOctokit();
     const { data } = await octokit.repos.getContent({ owner, repo, path, ref });
     return {
         content: [{ type: "text", text: JSON.stringify({
@@ -43,6 +51,7 @@ server.tool("github_write_file", {
     owner: z.string(), repo: z.string(), path: z.string(),
     content: z.string(), message: z.string(), branch: z.string(), sha: z.string()
 }, async ({ owner, repo, path, content, message, branch, sha }) => {
+    const octokit = getOctokit();
     await octokit.repos.createOrUpdateFileContents({
         owner, repo, path, message,
         content: Buffer.from(content).toString("base64"),
@@ -56,6 +65,7 @@ server.tool("get_workflow_runs", {
     branch: z.string().optional().describe("可选：检查特定分支的 CI 状态"),
 }, async ({ owner, repo, branch }) => {
     try {
+        const octokit = getOctokit();
         const { data } = await octokit.actions.listWorkflowRunsForRepo({
             owner,
             repo,
@@ -84,6 +94,7 @@ server.tool("get_workflow_runs", {
     }
 });
 server.tool("merge_pr", { owner: z.string(), repo: z.string(), pull_number: z.number() }, async ({ owner, repo, pull_number }) => {
+    const octokit = getOctokit();
     await octokit.pulls.merge({ owner, repo, pull_number });
     return { content: [{ type: "text", text: "🚀 任务完成，PR 已成功合并！" }] };
 });

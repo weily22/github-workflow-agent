@@ -10,6 +10,10 @@ const octokit = new Octokit({
 const server = new McpServer({
     name: "github-workflow-tools",
     version: "1.0.0",
+    },{
+    capabilities: {
+        tools: {}, // 声明这个 Server 具备提供工具的能力
+    },
 });
 server.tool("get_pr_diff", { owner: z.string(), repo: z.string(), pull_number: z.number() }, async ({ owner, repo, pull_number }) => {
     try {

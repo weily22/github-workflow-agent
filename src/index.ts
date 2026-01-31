@@ -14,6 +14,9 @@ const server = new McpServer({
 server.tool(
     "get_pr_diff",
     { owner: z.string(), repo: z.string(), pull_number: z.number() },
+    {
+        description: "获取指定 PR 的代码差异。当你需要进行代码审计、查找 Bug 或理解代码变更逻辑时，必须先调用此工具。",
+    },
     async ({ owner, repo, pull_number }) => {
         try {
             const { data } = await octokit.pulls.get({

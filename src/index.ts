@@ -4,9 +4,14 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { Octokit } from "@octokit/rest";
 
-const octokit = new Octokit({
-    auth: process.env.GITHUB_TOKEN,
-});
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+// 延迟初始化 Octokit 的函数
+const getOctokit = () => {
+    if (!GITHUB_TOKEN) {
+        throw new Error("Missing GITHUB_TOKEN environment variable");
+    }
+    return new Octokit({ auth: GITHUB_TOKEN });
+};
 const server = new McpServer({
     name: "github-workflow-tools",
     version: "1.0.0",
@@ -31,6 +36,7 @@ server.tool(
     "add_pr_comment",
     { owner: z.string(), repo: z.string(), pull_number: z.number(), report: z.string() },
     async ({ owner, repo, pull_number, report }) => {
+        const octokit = getOctokit();
         await octokit.issues.createComment({
             owner, repo, issue_number: pull_number,
             body: `### 🤖 AI Code Review Report\n\n${report}`
